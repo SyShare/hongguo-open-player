@@ -95,9 +95,9 @@ fun HongguoTvApp(
 private fun TvCatalogList(catalog: CatalogResponse) {
     val items = catalog.items.ifEmpty {
         listOf(
-            "服务未连接",
-            "待接入真实源数据",
-            "请确认服务器在 8899 端口运行"
+            "未连接到服务",
+            "请确认宿主机运行了 src/server",
+            "并使用 10.0.2.2:8899 或真实 IP"
         )
     }
 

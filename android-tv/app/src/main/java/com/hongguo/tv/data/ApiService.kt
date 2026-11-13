@@ -36,11 +36,13 @@ interface ApiService {
 }
 
 object ApiConfig {
-    private const val DEFAULT_BASE_URL = "http://127.0.0.1:8899"
-    private const val ENV_BASE_URL = "HONGGUO_TV_API_BASE_URL"
+    const val DEFAULT_HOST = "10.0.2.2"
+    const val DEFAULT_PORT = 8899
+    const val DEFAULT_BASE_URL = "http://10.0.2.2:8899/"
 
-    fun baseUrl(): String {
-        return System.getenv(ENV_BASE_URL)?.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL
+    fun baseUrl(host: String = DEFAULT_HOST, port: Int = DEFAULT_PORT): String {
+        val cleanHost = host.trim().removeSuffix("/")
+        return "http://$cleanHost:$port/"
     }
 }
 
@@ -60,7 +62,7 @@ object ApiFactory {
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl(ApiConfig.baseUrl())
+            .baseUrl(ApiConfig.DEFAULT_BASE_URL)
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
