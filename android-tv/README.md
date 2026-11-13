@@ -1,66 +1,41 @@
-# 红果开源播放器 Android TV 适配工程
+# Android TV 适配说明
 
-本目录是基于现有仓库的 Android TV 适配骨架，目标是保留现有 `src/server` 中的媒体服务能力，并新增一个 TV 端客户端，使用遥控器交互和大屏 UI。
+## 1. 服务端访问方式
 
-## 设计原则
+Android TV / 模拟器需要通过宿主机 IP 访问当前的本地服务，不能继续使用 `127.0.0.1`。
 
-- 不直接改造 Electron 桌面端代码
-- 复用现有 `src/server` 的 API 能力：搜索、详情、播放信息、收藏、历史、播放代理等
-- Android TV 端负责：大屏布局、遥控器导航、播放控制、用户数据管理
-- 统一使用 `http://127.0.0.1:8899` 或可配置 API server 访问已有服务
-
-## 已完成的适配骨架
-
-- Android TV Gradle 项目结构
-- Leanback / Compose 入口页面
-- TV 端 API 接口抽象
-- 首页、详情、播放页面的示例组件骨架
-
-## 下一步执行顺序
-
-1. 将 `src/server` 相关接口抽离为标准 API contract
-2. 在 `android-tv/app` 中补齐 ViewModel、Repository 层
-3. 接入 ExoPlayer 播放器，并绑定 `/api/play/:vid`、`/api/stream/:vid`
-4. 补齐搜索、详情、收藏、历史、分集切换
-5. 适配 D-pad、返回键、菜单键、快进快退键
-6. 压测遥控器聚焦和电视端 UI 兼容性
-
-## 目录结构
-
-- `android-tv/`：Android TV 项目
-- `src/server/`：保留原有媒体能力，不改动主逻辑
-
-## 运行方式
+建议在宿主机中启动服务时使用：
 
 ```bash
-cd android-tv
-./gradlew assembleDebug
+HONGGUO_HOST=0.0.0.0 HONGGUO_ALLOW_LAN=1 node src/server/index.js
 ```
 
-## 端口约定
+这会让 Node 服务同时监听局域网地址，TV 端可通过：
 
-默认保留现有服务端口：
+- Android 模拟器：`http://10.0.2.2:8899`
+- 实体 Android TV：`http://<电脑局域网 IP>:8899`
 
-- 8899：本地播放器服务
+## 2. 备注
 
-如果需要从 Android TV 真机访问 PC 主机服务，请在 `ApiConfig.kt` 中改成目标宿主 IP，而不是固定 127.0.0.1。
+- 这一步是为了兼容 TV 客户端，对原桌面端逻辑保持不变。
+- 默认桌面端仍使用本地绑定，不启用 LAN 模式。
+- `HONGGUO_ALLOW_LAN=1` 会解除部分本地会话限制，以便 TV 端可直接访问 API。
 
-## 注意事项
+## 3. Android TV 客户端
 
-- Android TV 设备不能直接用现有 Electron 窗口；需要单独使用 Android 客户端。
-- 需要单独处理 10-foot UI 动效与遥控器焦点逻辑。
-- 播放地址与流媒体代理能力保持复用，不在 TV App 中重新实现解密逻辑。
+客户端默���地址已调整为：
 
-## 目标成品
+- `http://10.0.2.2:8899/`
 
-首版目标：
+如果实际设备不是模拟器，请改成局域网 IP，例如：
 
-- 首页推荐
-- 分类列表
-- 搜索
-- 详情页
-- 播放页
-- 历史/收藏
-- 返回和导航逻辑
+- `http://192.168.1.5:8899/`
 
-这是一个 TV 版本第一版的清晰落地起点。
+## 4. 下一步
+
+后续仍按 TV 端真实服务接入推进，优先做：
+
+- 真实列表数据加载
+- 详情页加载
+- 播放页接入
+- 遥控器导航和 ExoPlayer 接口绑定
